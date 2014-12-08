@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+
+<html data-ng-app="Billboard">
+<head>
+    <base href="/">
+    @Styles.Render("~/Content/Css")
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body data-ng-controller="RootCtrl" ng-cloak>
+    <header>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/racka">Billboard</a>
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <form class="navbar-form navbar-right" role="search">
+                        <div class="form-group">
+                            <input data-ng-change="search()" type="text" data-ng-model="query" class="form-control" placeholder="Поиск">
+                        </div>
+                        <button type="submit" data-ng-click="search('go')" class="btn btn-default">Поиск</button>
+                    </form>
+                </div>
+                <!-- /.navbar-collapse -->
+            </div>
+            <!-- /.container-fluid -->
+        </nav>
+
+        <div class="cntrl-membership">
+            <div class="container-fluid">
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse">
+                    <div class="navbar-form navbar-right">
+                        <p data-ng-if="!isLogged" class="navbar-text"><a href="/registration" class="navbar-link">Регистрация</a></p>
+                        <p data-ng-if="!isLogged" class="navbar-text"><a href="/login" class="navbar-link">Войти</a></p>
+                        <p data-ng-if="isLogged" class="navbar-text"><a href="/add" class="navbar-link">Добавить пост</a></p>
+                        <p data-ng-if="isLogged" class="navbar-text"><a data-ng-click="logout()" href="javascript:void(0)" class="navbar-link">Выйти</a></p>
+                    </div>
+                </div>
+                <!-- /.navbar-collapse -->
+            </div>
+            <!-- /.container-fluid -->
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div ng-view></div>
+    </div>
+
+    <alert class="ng-cloak form-alert" ng-if="isAlert" type="{{alert.type}}" ng-bind="alert.msg"></alert>
+
+    @Scripts.Render("~/bundles/otherJs")
+    @Scripts.Render("~/bundles/angularApp")
+
+</body>
+</html>
+
+<script type="text/ng-template" id="popup-register.html">
+        
+        <form method="post" name="regForm" ng-submit="register()">
+            <div class="modal-header">
+                <button ng-click="closePopup()" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Регистрация</h4>     
+                <span ng-show="regForm.$invalid-repeat && regForm.confirmPassword.$dirty && elem === 'cp' " class="span-error">Пароли не совпадают</span>
+                <span ng-show="regForm.Login.$invalid && regForm.Login.$dirty && elem === 'l' " class="span-error">Логин - поле обязательно</span>
+                <span ng-show="regForm.Password.$invalid && regForm.Password.$dirty && elem === 'p'" class="span-error">Пароль - поле обязательно</span>           
+            </div>
+            <div class="modal-body">
+                <div class="form-group pos-rel">
+                    <input class="form-control field" placeholder="Логин" name="Login" ng-model="Login" ng-focus="setFocus('l')" required autofocus/>
+                </div>
+                <div class="form-group pos-rel">
+                    <input class="form-control field" type="password" placeholder="Пароль" name="Password" ng-model="Password" ng-focus="setFocus('p')" required/>
+                </div>
+                <div class="form-group pos-rel">
+                    <input class="form-control field" type="password" placeholder="Повторите пароль" name="confirmPassword" ng-model="confirmPassword" ng-focus="setFocus('cp')" repeat-password="Password" required repeat/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" ng-disabled="regForm.$invalid" class="btn btn-primary-custom">Зарегистрировать</button>
+            </div>
+        </form>
+      
+</script>
+
+<script type="text/ng-template" id="popup-login.html">
+        
+        <form method="post" name="logForm" ng-submit="login()">
+            <div class="modal-header">
+                <button ng-click="closePopup()" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Вход</h4>
+                <span ng-show="logForm.Login.$invalid && logForm.Login.$dirty && elem === 'l' " class="span-error">Логин - поле обязательно</span>
+                <span ng-show="logForm.Password.$invalid && logForm.Password.$dirty && elem === 'p'" class="span-error">Пароль - поле обязательно</span>           
+            </div>
+            <div class="modal-body">
+                <div class="form-group pos-rel">
+                    <input class="form-control field" placeholder="Логин" name="Login" ng-model="Login" ng-focus="setFocus('l')" required autofocus/>
+                </div>
+                <div class="form-group pos-rel">
+                    <input class="form-control field" type="password" placeholder="Пароль" name="Password" ng-model="Password" ng-focus="setFocus('p')" required/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" ng-disabled="logForm.$invalid" class="btn btn-primary-custom">Войти</button>
+            </div>
+        </form>
+
+</script>
+
+<script type="text/ng-template" id="popup-add.html">
+        
+        <form method="post" action="/Apis/AddPost" name="addForm" enctype="multipart/form-data">
+            <div class="modal-header">
+                <button ng-click="closePopup()" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Добавление нового объявления</h4>
+                <span ng-show="addForm.Title.$invalid && addForm.Title.$dirty && elem === 't' " class="span-error add-form-error">Заголовок - поле обязательно</span>
+                <span ng-show="addForm.Text.$invalid && addForm.Text.$dirty && elem === 'tx'" class="span-error add-form-error">Текст - поле обязательно</span>           
+            </div>
+            <div class="modal-body">
+                <div class="form-group pos-rel input-file">
+                    <input type="file" name="file" id="file" required />
+                </div>
+                <div class="form-group pos-rel">
+                    <input class="form-control field" placeholder="Заголовок" name="Title" ng-model="Title" ng-focus="setFocus('t')" required autofocus/>
+                </div>
+                <div class="form-group pos-rel">
+                    <textarea class="form-control field add-text" placeholder="Текст" name="Text" ng-model="Text" ng-focus="setFocus('tx')" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" ng-disabled="addForm.$invalid" class="btn btn-primary-custom">Добавить</button>
+            </div>
+        </form>
+
+</script>
+
+
+<script type="text/ng-template" id="popup-edit.html">
+        
+        <form method="post" name="editForm" ng-submit="saveChanges()">
+            <div class="modal-header">
+                <button ng-click="closePopup()" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Редактирование объявления</h4>
+                <span ng-show="editForm.Title.$invalid && editForm.Title.$dirty && elem === 't' " class="span-error add-form-error">Заголовок - поле обязательно</span>
+                <span ng-show="editForm.Text.$invalid && editForm.Text.$dirty && elem === 'tx'" class="span-error add-form-error">Текст - поле обязательно</span>           
+            </div>
+            <div class="modal-body">
+                <div class="form-group pos-rel">
+                    <input class="form-control field" placeholder="Заголовок" name="Title" ng-model="editPost.Title" ng-focus="setFocus('t')" required autofocus/>
+                </div>
+                <div class="form-group pos-rel">
+                    <textarea class="form-control field add-text" placeholder="Текст" name="Text" ng-model="editPost.Text" ng-focus="setFocus('tx')" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" ng-disabled="editForm.$invalid" class="btn btn-primary-custom">Сохранить</button>
+            </div>
+        </form>
+
+</script>
