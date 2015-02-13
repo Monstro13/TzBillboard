@@ -10,14 +10,15 @@ using Billboard.Repositories.DTO;
 using MongoDB.Driver.Builders;
 using System.IO;
 using Billboard.Services.Models;
+using Billboard.Repositories.Interfaces;
 
 namespace Billboard.Repositories
 {
-    public class PostRepository : BaseRepository<Post>
+    public class PostRepository : BaseRepository<Post>, IPostRepository
     {
         public PostRepository() : base("posts") { }
 
-        internal IEnumerable<CatPost> GetPostsByUserId(string userId, string page = "")
+        public IEnumerable<CatPost> GetPostsByUserId(string userId, string page = "")
         {
             var firstData = Collection.AsQueryable<Post>()
                                       .Where(p => p.UserId == new ObjectId(userId))
@@ -37,7 +38,7 @@ namespace Billboard.Repositories
             else return firstData;
         }
 
-        internal DeleteResult DeletePostById(string postId)
+        public DeleteResult DeletePostById(string postId)
         {
             try
             {
@@ -63,7 +64,7 @@ namespace Billboard.Repositories
             }
         }
 
-        internal bool UpdatePostById(string id, string title, string text)
+        public bool UpdatePostById(string id, string title, string text)
         {
             try
             {
@@ -75,12 +76,12 @@ namespace Billboard.Repositories
             catch { return false; }
         }
 
-        internal Post GetPostById(string postId)
+        public Post GetPostById(string postId)
         {
             return Collection.AsQueryable<Post>().FirstOrDefault(p => p._id == new ObjectId(postId));
         }
 
-        internal IEnumerable<CatPost> GetPostsByQuery(string page = "", string query = "")
+        public IEnumerable<CatPost> GetPostsByQuery(string page = "", string query = "")
         {
             query = query.ToLower().Trim();
             var firstData = Collection.AsQueryable<Post>()
@@ -99,6 +100,25 @@ namespace Billboard.Repositories
                 else return firstData;
             }
             else return firstData;
+        }
+
+
+        public bool Insert(Post post)
+        {
+            try
+            {
+                Collection.Save(post);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public int GetCountPostsByUserId(ObjectId objectId)
+        {
+            return Collection.AsQueryable<Post>().Where(x => x.UserId == objectId).Count();
         }
     }
 }

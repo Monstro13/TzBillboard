@@ -1,0 +1,54 @@
+#include <def21060.h>
+#include <signal.h>
+#include "constants.h"
+
+// Ïðîöåäóðà óñòàíîâêè è âêëþ÷åíèÿ ïîñëåäîâàòåëüíîãî ïîðòà
+extern void SetupSPORT(	int NumSPORT, 	// íîìåð ïîðòà
+				int Direction,	// íàïðàâëåíèå
+				int LenWord,	// äëèíà ñëîâà
+				int Divisor);	// äåëèòåëü ÷àñòîòû
+
+// Ïðîöåäóðà îáðàáîòêè áóôåðà
+extern "asm" int ProcessBuffer(int *InputBuffer); // âõîäíîé áóôåð
+
+int SrcBuffer[N];		// áóôåð äëÿ íàêîïëåíèÿ ýëåìåíòîâ ìàññèâà
+int cur_index;			// ïåðâîå ñâîáîäíîå çíà÷åíèå
+
+
+// Îáðàáîò÷èê ïðåðûâàíèÿ îò SPORT0-ïðèåì
+//#pragma interrupt void SPORT0_Receive_Handler(int sig);
+void SPORT0_Receive_Handler(int sig)
+{
+	int value;
+		// ïðî÷èòàòü çíà÷åíèå èç ïîðòà RX0
+	asm (	"R0 = dm(0xE3);"
+			"%0 = R0;"
+			: "=d" (value)
+			:
+			: "r0" );
+	SrcBuffer[cur_index] = value;						// çàïèñàòü åãî â áóôåð
+	cur_index = __builtin_circindex(cur_index, 1, N);	// ïåðåäâèíóòü èíäåêñ
+														// âûçâàòü ôóíêöèþ îáðàáîòêè
+	value = ProcessBuffer(SrcBuffer);
+		// çàïèñàòü çíà÷åíèå â ïîðò TX1
+	asm (	"R0 = %0;"
+			"dm(0xf2) = R0;"
+			:
+			: "d" (value)
+			: "r0" );
+	return;
+}
+
+int main()
+{
+	// óñòàíîâèòü îáðàáîò÷èê ïðåðûâàíèÿ ïî ïðèåìó ÷åðåç SPORT0
+  interrupt(SIG_SPR0I, SPORT0_Receive_Handler);
+  
+   	// ñêîíôèãóðèðîâàòü è âêëþ÷èòü ïîðò SPORT0 íà ïðèåì
+  SetupSPORT(cnSerialPort0, cnReceive, 32, 0x10);
+  SetupSPORT(cnSerialPort1, cnTransmit, 32, 0x10);
+  
+   	// çàâåðøèòü main()
+  return 0;
+}
+

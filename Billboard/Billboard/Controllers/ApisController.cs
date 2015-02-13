@@ -2,6 +2,7 @@
 using Billboard.Models;
 using Billboard.Repositories.LkpEnums;
 using Billboard.Services;
+using Billboard.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,10 +15,17 @@ namespace Billboard.Controllers
 {
     public class ApisController : Controller
     {
+        private readonly IUserService _userService;
+
+        public ApisController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
         [HttpPost]
         public ActionResult Register(String login, String password)
         {
-            var result = new UserService().RegisterUser(login, password);
+            var result = _userService.RegisterUser(login, password);
 
             if (result.Code == StatusCode.Success)
             {
@@ -32,7 +40,7 @@ namespace Billboard.Controllers
         [HttpPost]
         public ActionResult Login(String login, String password)
         {
-            var result = new UserService().Login(login, password);
+            var result = _userService.Login(login, password);
 
             if (result.Code == StatusCode.Success)
             {
@@ -50,7 +58,7 @@ namespace Billboard.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 var userId = SessionManager.GetUserId();
-                var user = new UserService().GetUser(userId);
+                var user = _userService.GetUser(userId);
 
                 return Json(user);
 
@@ -73,8 +81,7 @@ namespace Billboard.Controllers
             var path = Path.Combine(Server.MapPath("~/Images"), fileName);
             post.file.SaveAs(path);
 
-            var service = new UserService();
-            service.AddPost(SessionManager.GetUserId(), post.Title, post.Text, "/Images/" + fileName);
+            _userService.AddPost(SessionManager.GetUserId(), post.Title, post.Text, "/Images/" + fileName);
 
             return RedirectToAction("Index", "Home");
         }
@@ -83,15 +90,14 @@ namespace Billboard.Controllers
         [Authorize]
         public ActionResult Posts(String page = "", String query = "")
         {
-            var service = new UserService();
-            return Json(service.GetPosts(SessionManager.GetUserId(), page, query));
+            return Json(_userService.GetPosts(SessionManager.GetUserId(), page, query));
         }
 
         [HttpPost]
         [Authorize]
         public ActionResult DeletePost(String id)
         {
-            var result = new UserService().DeletePost(id);
+            var result = _userService.DeletePost(id);
 
             if (result.FromDb)
             {
@@ -109,7 +115,35 @@ namespace Billboard.Controllers
         [Authorize]
         public ActionResult SavePost(String id, String title, String text)
         {
-            return Json(new UserService().SavePost(id, title, text));
+            return Json(_userService.SavePost(id, title, text));
+        }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult Friends(String userId)
+        {
+            return Json(_userService.GetFriends(userId));
+        }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult FriendsPosts(String login)
+        {
+            return Json(_userService.GetPostsByLogin(login));
+        }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult AllUsers()
+        {
+            return Json(_userService.GetAllUsers());
+        }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult AddToFriend(string id)
+        {
+            return Json(_userService.AddToFriend(SessionManager.GetUserId(), id));
         }
     }
 }

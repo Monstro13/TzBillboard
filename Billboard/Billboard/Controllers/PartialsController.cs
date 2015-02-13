@@ -22,5 +22,10 @@ namespace Billboard.Controllers
         {
             return View();
         }
+
+        public ActionResult Friends()
+        {
+            return View();
+        }
     }
 }

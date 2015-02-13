@@ -22,19 +22,5 @@ namespace Billboard.Repositories
             MongoCollection<T> collection = Db.GetCollection<T>(entities);
             Collection = collection;
         }
-
-        public bool Insert(T entity)
-        {
-            try
-            {
-                Collection.Save(entity);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-
-        }
     }
 }

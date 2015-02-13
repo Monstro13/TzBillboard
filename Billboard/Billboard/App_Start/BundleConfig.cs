@@ -34,7 +34,9 @@ namespace Billboard
                         "~/Content/App/Controllers/ad.js",
                         "~/Content/App/Controllers/add.js",
                         "~/Content/App/Services/manager.js",
-                        "~/Content/App/Filters/fromNow.js"));
+                        "~/Content/App/Filters/fromNow.js",
+                        "~/Content/App/Controllers/friends.js",
+                        "~/Content/App/Controllers/friend.js"));
         }
     }
 }

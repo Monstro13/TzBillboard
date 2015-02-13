@@ -13,5 +13,7 @@ namespace Billboard.Repositories.Models
         public String Login { get; set; }
 
         public String Password { get; set; }
+
+        public List<ObjectId> Friends { get; set; }
     }
 }

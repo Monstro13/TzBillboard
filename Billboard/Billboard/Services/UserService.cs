@@ -1,7 +1,9 @@
 ﻿using Billboard.Repositories;
 using Billboard.Repositories.DTO;
+using Billboard.Repositories.Interfaces;
 using Billboard.Repositories.LkpEnums;
 using Billboard.Repositories.Models;
+using Billboard.Services.Interfaces;
 using Billboard.Services.Models;
 using System;
 using System.Collections.Generic;
@@ -12,11 +14,20 @@ using System.Web;
 
 namespace Billboard.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
-        internal SignUpResult RegisterUser(string login, string password)
+        private readonly IPostRepository _postRepository;
+
+        private readonly IUserRepository _userRepository;
+
+        public UserService(IUserRepository userRepository, IPostRepository postRepository)
         {
-            var userRepo = new UserRepository();
+            _postRepository = postRepository;
+            _userRepository = userRepository;
+        }
+
+        public SignUpResult RegisterUser(string login, string password)
+        {
             var salt = CreateSalt(10);
 
             var user = new User()
@@ -28,9 +39,9 @@ namespace Billboard.Services
 
             try
             {
-                if (!userRepo.FindUser(login))
+                if (!_userRepository.FindUser(login))
                 {
-                    userRepo.Insert(user);
+                    _userRepository.Insert(user);
                     return new SignUpResult
                     {
                         Code = StatusCode.Success,
@@ -89,12 +100,10 @@ namespace Billboard.Services
             return sBuilder.ToString();
         }
 
-        internal SignUpResult Login(string login, string password)
+        public SignUpResult Login(string login, string password)
         {
-            var userRepo = new UserRepository();
             var salt = CreateSalt(10);
-
-            var user = userRepo.getUser(login, CreatePasswordHash(password, salt));
+            var user = _userRepository.getUser(login, CreatePasswordHash(password, salt));
 
             if (user != null)
             {
@@ -114,17 +123,13 @@ namespace Billboard.Services
             }
         }
 
-        internal CatUser GetUser(string userId)
+        public CatUser GetUser(string userId)
         {
-            var userRepo = new UserRepository();
-
-            return new CatUser(userRepo.getUserById(userId));
+            return new CatUser(_userRepository.getUserById(userId));
         }
 
-        internal bool AddPost(String userId, String title, String text, String path)
+        public bool AddPost(String userId, String title, String text, String path)
         {
-            var postRepo = new PostRepository();
-
             try
             {
                 var post = new Post
@@ -137,7 +142,7 @@ namespace Billboard.Services
                     UserId = new MongoDB.Bson.ObjectId(userId)
                 };
 
-                postRepo.Insert(post);
+                _postRepository.Insert(post);
                 return true;
             }
             catch
@@ -146,29 +151,61 @@ namespace Billboard.Services
             }
         }
 
-        internal IEnumerable<CatPost> GetPosts(string userId, string page = "", string query = "")
+        public IEnumerable<CatPost> GetPosts(string userId, string page = "", string query = "")
         {
-            var postRepo = new PostRepository();
-
             if (query.Length == 0)
             {
-                return postRepo.GetPostsByUserId(userId, page);
+                return _postRepository.GetPostsByUserId(userId, page);
             }
-            else return postRepo.GetPostsByQuery(page, query);
+            else return _postRepository.GetPostsByQuery(page, query);
         }
 
-        internal DeleteResult DeletePost(string postId)
+        public DeleteResult DeletePost(string postId)
         {
-            var postRepo = new PostRepository();
-
-            return postRepo.DeletePostById(postId);
+            return _postRepository.DeletePostById(postId);
         }
 
-        internal bool SavePost(string id, string title, string text)
+        public bool SavePost(string id, string title, string text)
         {
-            var postRepo = new PostRepository();
+            return _postRepository.UpdatePostById(id, title, text);
+        }
 
-            return postRepo.UpdatePostById(id, title, text);
+        public List<FriendInfo> GetFriends(string userId)
+        {
+            var friends = _userRepository.GetFriends(userId);
+            var friendsList = new List<FriendInfo>();
+
+            friends.ForEach(x =>
+            {
+                var info = new FriendInfo
+                {
+                    Login = x.Login,
+                    CountPosts = _postRepository.GetCountPostsByUserId(x._id)
+                };
+                friendsList.Add(info);
+            });
+
+            return friendsList;
+        }
+
+
+        public List<CatPost> GetPostsByLogin(string login)
+        {
+            var userId = _userRepository.GetUserIdByLogin(login);
+
+            return _postRepository.GetPostsByUserId(userId).ToList();
+        }
+
+
+        public List<CatUser> GetAllUsers()
+        {
+            return _userRepository.GetAll();
+        }
+
+
+        public bool AddToFriend(string p, string id)
+        {
+            return _userRepository.AddFriend(p, id);
         }
     }
 }

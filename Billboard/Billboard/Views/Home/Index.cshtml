@@ -43,6 +43,7 @@
                     <div class="navbar-form navbar-right">
                         <p data-ng-if="!isLogged" class="navbar-text"><a href="/registration" class="navbar-link">Регистрация</a></p>
                         <p data-ng-if="!isLogged" class="navbar-text"><a href="/login" class="navbar-link">Войти</a></p>
+                        <p data-ng-if="isLogged" class="navbar-text"><a href="/friends" class="navbar-link">Друзья</a></p>
                         <p data-ng-if="isLogged" class="navbar-text"><a href="/add" class="navbar-link">Добавить пост</a></p>
                         <p data-ng-if="isLogged" class="navbar-text"><a data-ng-click="logout()" href="javascript:void(0)" class="navbar-link">Выйти</a></p>
                     </div>

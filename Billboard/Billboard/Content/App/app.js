@@ -25,5 +25,13 @@ app.config(['$routeProvider', '$locationProvider',
                 controller: 'AddCtrl',
                 templateUrl: '/Partials/Empty'
             })
+            .when('/friends', {
+                controller: 'FriendsCtrl',
+                templateUrl: '/Partials/Friends'
+            })
+            .when('/friends/:friend', {
+                controller: 'FriendCtrl',
+                templateUrl: '/Partials/Ad'
+            })
             .otherwise({ redirectTo: '/welcome' });
     }]);

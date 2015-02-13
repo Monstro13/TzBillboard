@@ -36,6 +36,30 @@
                     });
             };
 
+            api.Friends = function (userId) {
+                return $http.post('/Apis/Friends', { userId: userId }).then(function (results) {
+                    return results.data;
+                })
+            };
+
+            api.FriendsPost = function (login) {
+                return $http.post('/Apis/FriendsPosts', { login: login }).then(function (results) {
+                    return results.data;
+                })
+            };
+
+            api.AllUsers = function () {
+                return $http.post('/Apis/AllUsers').then(function (results) {
+                    return results.data;
+                })
+            };
+
+            api.AddUserToFriends = function (id) {
+                return $http.post('/Apis/AddToFriend', { id: id }).then(function (results) {
+                    return results.data;
+                })
+            };
+
             return api;
         }
     ]);

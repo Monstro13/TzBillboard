@@ -126,3 +126,24 @@ input[type="file"] {
 .float-left {
     float: left;
 }
+
+.post-count {
+    margin-left: 10px;
+}
+
+.all-users {
+    position: fixed;
+    left: 15px;
+    top: 90px;
+}
+
+    .all-users a {
+        font-size: 25px;
+        margin-left: 20px;
+        margin-bottom: 20px;
+        text-decoration: none;
+    }
+
+    .all-users ul {
+        list-style: none;
+    }
